@@ -1,8 +1,9 @@
 import { icons } from "@/constants/icons";
 import { fetchMovieDetails } from "@/services/api";
+import { isMovieSaved, saveOrRemoveMovie } from "@/services/appwrite";
 import useFetch from "@/services/useFetch";
 import { router, useLocalSearchParams } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface MovieInfoProps {
@@ -25,13 +26,48 @@ const MovieDetails = () => {
     fetchMovieDetails(id as string)
   );
 
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!movie) return;
+    (async () => {
+      try {
+        const saved = await isMovieSaved(Number(movie.id));
+        setIsSaved(saved);
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }, [movie]);
+
+  const toggleSave = async () => {
+    if (!movie) return;
+    setSaving(true);
+    try {
+      const res = await saveOrRemoveMovie(
+        Number(movie.id),
+        movie as unknown as Movie
+      );
+
+      if (res.action == "created") setIsSaved(true);
+      else if (res.action == "removed") setIsSaved(false);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <View className="bg-black flex-1">
       <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
         <View>
           <Image
             source={{
-              uri: `https://image.tmdb.org/t/p/w500/${movie?.poster_path}`,
+              uri: movie
+                ? `https://image.tmdb.org/t/p/w500/${movie?.poster_path}`
+                : undefined,
             }}
             className="w-full h-[550px]"
             resizeMode="cover"
@@ -55,6 +91,17 @@ const MovieDetails = () => {
               ({movie?.vote_count} votes)
             </Text>
           </View>
+
+          <TouchableOpacity
+            className="flex-row gap-x-2 mt-5 px-4 py-1 rounded-full bg-red"
+            onPress={toggleSave}
+            disabled={saving}
+          >
+            <Image source={icons.save} />
+            <Text className="text-white ml-2">
+              {isSaved ? "Saved" : "Save"}
+            </Text>
+          </TouchableOpacity>
 
           <MovieInfo label="Overview" value={movie?.overview} />
           <MovieInfo

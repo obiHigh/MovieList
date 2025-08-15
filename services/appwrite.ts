@@ -4,6 +4,7 @@ import { Client, Databases, ID, Query } from "react-native-appwrite";
 
 const DATABASE_ID = process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID!;
 const COLLECTION_ID = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_ID!;
+const COLLECTION_SAVED_ID = process.env.EXPO_PUBLIC_APPWRITE_COLLECTION_SAVED_ID!;
 
 const client = new Client()
     .setEndpoint(process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!)
@@ -64,3 +65,63 @@ export const getTrendingMovies = async (): Promise<TrendingMovie[] | undefined> 
         return undefined;
     }
 }
+
+export const getSavedMovies = async (): Promise<Movie[] | undefined> => {
+    try {
+        const result = await database.listDocuments(DATABASE_ID, COLLECTION_SAVED_ID);
+        return result.documents as unknown as Movie[];
+    } catch (err) {
+        console.log(err);
+        return undefined;
+    }
+}
+
+export const saveOrRemoveMovie = async (movie_id: number, movie: Movie) => {
+    try {
+        const result = await database.listDocuments(DATABASE_ID, COLLECTION_SAVED_ID, [
+            Query.equal("movie_id", movie_id),
+            Query.limit(1)
+        ]);
+
+        if (result.documents.length > 0) {
+            const existingMovie = result.documents[0];
+        
+            await database.deleteDocument(
+                DATABASE_ID,
+                COLLECTION_SAVED_ID,
+                existingMovie.$id
+            )
+
+            return {action: "removed", id: existingMovie.$id};
+        } else {
+            const doc = await database.createDocument(
+                DATABASE_ID,
+                COLLECTION_SAVED_ID,
+                ID.unique(),
+                {
+                    movie_id: movie.id,
+                    title: movie.title,
+                    poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                }
+            );
+
+            return {action: "created", doc}
+        }
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+export const isMovieSaved = async (movie_id: number): Promise<boolean> => {
+  try {
+    const res = await database.listDocuments(DATABASE_ID, COLLECTION_SAVED_ID, [
+      Query.equal("movie_id", movie_id),
+      Query.limit(1),
+    ]);
+    return (res.documents || []).length > 0;
+  } catch (err) {
+    console.log("isMovieSaved error", err);
+    return false;
+  }
+};

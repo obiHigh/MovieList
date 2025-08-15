@@ -55,7 +55,7 @@ export default function Index() {
             {trendingMovies && (
               <View className="mt-1">
                 <Text className="text-lg text-white font-bold mt-5 mb-3">
-                  Trending
+                  Recently searched
                 </Text>
               </View>
             )}
