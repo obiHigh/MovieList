@@ -46,8 +46,11 @@ const MovieDetails = () => {
     setSaving(true);
     try {
       const res = await saveOrRemoveMovie(
-        Number(movie.id),
-        movie as unknown as Movie
+        movie.id!,
+        movie.poster_path!,
+        movie.title!,
+        movie.vote_average!,
+        movie.release_date!
       );
 
       if (res.action == "created") setIsSaved(true);

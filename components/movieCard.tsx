@@ -8,7 +8,12 @@ const MovieCard = ({
   title,
   vote_average,
   release_date,
-}: Movie) => {
+}: any) => {
+  // console.log("id " + id);
+  // console.log("poster " + poster_path);
+  // console.log("title " + title);
+  // console.log("vote " + vote_average);
+  // console.log("date " + release_date);
   return (
     <Link href={`/movies/${id}`} asChild>
       <TouchableOpacity className="w-[30%]">
@@ -23,14 +28,14 @@ const MovieCard = ({
         />
 
         <Text className="text-white text-sm mt-2 font-bold" numberOfLines={1}>
-          {title}
+          {title ?? "N/A"}
         </Text>
 
         <View className="flex-row items-center justify-start gap-x-1">
           <Image source={icons.star} className="size-4" />
 
           <Text className="text-white text-xs font-bold uppercase">
-            {Math.round(vote_average / 2)}
+            {vote_average ? Math.round(vote_average / 2) : "N/A"}
           </Text>
         </View>
 

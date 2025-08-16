@@ -35,7 +35,7 @@ const TrendingCard = ({
           className="text-sm font-bold mt-2 text-light-200"
           numberOfLines={2}
         >
-          {title}
+          {title ?? "N/A"}
         </Text>
       </TouchableOpacity>
     </Link>

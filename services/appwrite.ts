@@ -66,20 +66,10 @@ export const getTrendingMovies = async (): Promise<TrendingMovie[] | undefined> 
     }
 }
 
-export const getSavedMovies = async (): Promise<Movie[] | undefined> => {
-    try {
-        const result = await database.listDocuments(DATABASE_ID, COLLECTION_SAVED_ID);
-        return result.documents as unknown as Movie[];
-    } catch (err) {
-        console.log(err);
-        return undefined;
-    }
-}
-
-export const saveOrRemoveMovie = async (movie_id: number, movie: Movie) => {
+export const saveOrRemoveMovie = async (movie_id: number, poster_path: string, title: string, vote_average: number, release_date: string) => {
     try {
         const result = await database.listDocuments(DATABASE_ID, COLLECTION_SAVED_ID, [
-            Query.equal("movie_id", movie_id),
+            Query.equal("id", movie_id),
             Query.limit(1)
         ]);
 
@@ -99,9 +89,11 @@ export const saveOrRemoveMovie = async (movie_id: number, movie: Movie) => {
                 COLLECTION_SAVED_ID,
                 ID.unique(),
                 {
-                    movie_id: movie.id,
-                    title: movie.title,
-                    poster_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                    id: movie_id,
+                    poster_path: poster_path,
+                    title: title,
+                    vote_average: vote_average,
+                    release_date: release_date
                 }
             );
 
@@ -116,7 +108,7 @@ export const saveOrRemoveMovie = async (movie_id: number, movie: Movie) => {
 export const isMovieSaved = async (movie_id: number): Promise<boolean> => {
   try {
     const res = await database.listDocuments(DATABASE_ID, COLLECTION_SAVED_ID, [
-      Query.equal("movie_id", movie_id),
+      Query.equal("id", movie_id),
       Query.limit(1),
     ]);
     return (res.documents || []).length > 0;
@@ -125,3 +117,15 @@ export const isMovieSaved = async (movie_id: number): Promise<boolean> => {
     return false;
   }
 };
+
+export const getSavedMovies = async () => {
+    try {
+        const result = await database.listDocuments(DATABASE_ID, COLLECTION_SAVED_ID, [
+        ]);
+
+        return result.documents;
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
