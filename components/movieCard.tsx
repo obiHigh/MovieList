@@ -9,11 +9,6 @@ const MovieCard = ({
   vote_average,
   release_date,
 }: any) => {
-  // console.log("id " + id);
-  // console.log("poster " + poster_path);
-  // console.log("title " + title);
-  // console.log("vote " + vote_average);
-  // console.log("date " + release_date);
   return (
     <Link href={`/movies/${id}`} asChild>
       <TouchableOpacity className="w-[30%]">
